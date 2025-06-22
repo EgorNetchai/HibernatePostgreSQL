@@ -8,6 +8,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -21,36 +22,37 @@ public class TransactionUtil {
      *
      * @param operation операция, выполняемая с сессией Hibernate
      * @param <T>       тип возвращаемого значения
-     * @return результат операции или null в случае ошибки
+     *
+     * @return Optional, содержащий результат операции, или Optional.empty() в случае ошибки
      */
-    public static <T> T executeInTransaction(Function<Session, T> operation) {
+    public static <T> Optional<T> executeInTransaction(Function<Session, T> operation) {
         Transaction transaction = null;
-
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             T result = operation.apply(session);
             transaction.commit();
-            return result;
+            logger.debug("Transaction committed, session isOpen: {}", session.isOpen());
+            return Optional.ofNullable(result);
 
         } catch (ConstraintViolationException e) {
             rollbackIfActive(transaction);
             logger.error("Нарушение ограничений базы данных: {}", e.getMessage(), e);
-            return null;
+            return Optional.empty();
 
         } catch (JDBCException e) {
             rollbackIfActive(transaction);
             logger.error("Ошибка PostgreSQL: {}", e.getMessage(), e);
-            return null;
+            return Optional.empty();
 
         } catch (HibernateException e) {
             rollbackIfActive(transaction);
             logger.error("Ошибка Hibernate: {}", e.getMessage(), e);
-            return null;
+            return Optional.empty();
 
         } catch (Exception e) {
             rollbackIfActive(transaction);
             logger.error("Неожиданная ошибка во время работы: {}", e.getMessage(), e);
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -61,8 +63,12 @@ public class TransactionUtil {
      */
     private static void rollbackIfActive(Transaction transaction) {
         if (transaction != null && transaction.isActive()) {
-            transaction.rollback();
-            logger.debug("Транзакция откатилась");
+            try {
+                transaction.rollback();
+                logger.debug("Транзакция откатилась");
+            } catch (Exception e) {
+                logger.error("Ошибка при откате транзакции: {}", e.getMessage(), e);
+            }
         }
     }
 }

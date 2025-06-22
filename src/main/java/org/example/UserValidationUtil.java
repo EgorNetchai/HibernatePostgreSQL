@@ -15,7 +15,7 @@ public class UserValidationUtil {
     private static final Pattern pattern = Pattern.compile(EMAIL_REGEX);
     private static final int MAX_AGE = 150;
     private static final int MIN_AGE = 0;
-    private static final long MIN_ID = 0;
+    private static final long MIN_ID = 1;
 
     private static final Logger logger = LoggerFactory.getLogger(UserValidationUtil.class);
 
@@ -24,6 +24,7 @@ public class UserValidationUtil {
      *
      * @param session сессия Hibernate
      * @param email   email для проверки
+     *
      * @throws IllegalArgumentException если email уже существует
      */
     public static void checkEmailExists(Session session, String email) {
@@ -41,16 +42,17 @@ public class UserValidationUtil {
      * Проверяет корректность имени пользователя.
      *
      * @param name имя для проверки
+     *
      * @return true, если имя корректно, иначе false
      */
     public static boolean isValidName(String name) {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.trim().isEmpty()) {
             logger.debug("Пустое имя.");
             System.out.println("Пустое имя.");
             return false;
         }
 
-        if (!name.matches("[a-zA-Z\\p{L} ]+")) {
+        if (!name.matches("[a-zA-Z\\p{L}]+( [a-zA-Z\\p{L}]+)*")) {
             logger.debug("Неверный формат имени: {}", name);
             System.out.println("Неверный формат имени.");
             return false;
@@ -63,6 +65,7 @@ public class UserValidationUtil {
      * Проверяет корректность email.
      *
      * @param email email для проверки
+     *
      * @return true, если email корректен, иначе false
      */
     public static boolean isValidEmail(String email) {
@@ -73,6 +76,7 @@ public class UserValidationUtil {
         }
 
         Matcher matcher = pattern.matcher(email);
+
         if (!matcher.matches()) {
             logger.debug("Неверный формат email: {}", email);
             System.out.println("Неверный формат email.");
@@ -86,6 +90,7 @@ public class UserValidationUtil {
      * Проверяет корректность возраста.
      *
      * @param age возраст для проверки
+     *
      * @return true, если возраст находится в допустимом диапазоне, иначе false
      */
     public static boolean isValidAge(int age) {
@@ -102,11 +107,18 @@ public class UserValidationUtil {
      * Проверяет корректность идентификатора.
      *
      * @param id идентификатор для проверки
+     *
      * @return true, если идентификатор корректен, иначе false
      */
     public static boolean isValidId(Long id) {
-        if (id == null || id <= MIN_ID) {
-            logger.debug("ID меньше или равен {}: {}", MIN_ID, id);
+        if(id == null) {
+            logger.debug("ID не может быть null.");
+            System.out.println("ID не может быть null.");
+            return false;
+        }
+
+        if (id < MIN_ID) {
+            logger.debug("ID меньше: {}", MIN_ID);
             System.out.println("ID меньше " + MIN_ID + ".");
             return false;
         }

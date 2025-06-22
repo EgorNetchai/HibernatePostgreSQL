@@ -16,20 +16,35 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
 public class User {
+    /**
+     * Уникальный идентификатор пользователя.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
     private Long id;
 
+    /**
+     * Имя пользователя.
+     */
     @Column(name = "name")
     private String name;
 
+    /**
+     * Электронная почта пользователя, уникальное поле.
+     */
     @Column(name = "email", unique = true)
     private String email;
 
+    /**
+     * Возраст пользователя.
+     */
     @Column(name = "age")
     private int age;
 
+    /**
+     * Дата и время создания записи о пользователе.
+     */
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp()
     private Timestamp createdAt;
@@ -77,5 +92,9 @@ public class User {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }
