@@ -29,11 +29,13 @@ public class UserService {
      * @param name  имя пользователя
      * @param email адрес электронной почты
      * @param age   возраст пользователя
+     *
      * @return сообщение о результате операции
      */
     public String create(String name, String email, String age) {
         try {
             int parsedAge = Integer.parseInt(age.trim());
+
             if (UserValidationUtil.isValidName(name) &&
                     UserValidationUtil.isValidEmail(email) &&
                     UserValidationUtil.isValidAge(parsedAge)) {
@@ -61,11 +63,13 @@ public class UserService {
      * Получает информацию о пользователе по его идентификатору.
      *
      * @param id идентификатор пользователя
+     *
      * @return сообщение с данными пользователя или об ошибке
      */
     public String read(String id) {
         try {
             long parsedId = Long.parseLong(id.trim());
+
             if (UserValidationUtil.isValidId(parsedId)) {
                 User user = userDAO.readUser(parsedId);
                 return userDataOutput(user);
@@ -74,6 +78,7 @@ public class UserService {
 
         } catch (NumberFormatException e) {
             return "Введите допустимое целое число для идентификатора.";
+
         } catch (HibernateException e) {
             logger.error("Ошибка базы данных при чтении пользователя: {}", e.getMessage(), e);
             return "Произошла ошибка базы данных. Попробуйте еще раз позже.";
@@ -84,6 +89,7 @@ public class UserService {
      * Формирует строковое представление данных пользователя.
      *
      * @param user пользователь для вывода
+     *
      * @return строковое представление данных пользователя
      */
     private String userDataOutput(User user) {
@@ -102,10 +108,12 @@ public class UserService {
      */
     public String readAll() {
         List<User> users = userDAO.readAllUsers();
+
         if (users == null) {
             logger.error("Не удалось прочитать пользователей из базы данных");
             return "Ошибка чтения пользователей.";
         }
+
         if (users.isEmpty()) {
             return "Пользователи не найдены.";
         }
@@ -117,6 +125,7 @@ public class UserService {
             sb.append(String.format("%-5d %-20s %-30s %-5d %-20s%n",
                     user.getId(), user.getName(), user.getEmail(), user.getAge(), user.getCreatedAt()));
         }
+
         return sb.toString();
     }
 
@@ -127,6 +136,7 @@ public class UserService {
      * @param name  новое имя
      * @param email новый email
      * @param age   новый возраст
+     *
      * @return сообщение о результате операции
      */
     public String update(String id, String name, String email, String age) {
@@ -143,6 +153,7 @@ public class UserService {
                     return "Не удалось обновить пользователя. Пользователь не найден или адрес электронной почты уже существует.";
                 }
             }
+
             return "Некорректные данные.";
 
         } catch (NumberFormatException e) {
@@ -161,22 +172,28 @@ public class UserService {
      * Удаляет пользователя по его идентификатору.
      *
      * @param id идентификатор пользователя
+     *
      * @return сообщение о результате операции
      */
     public String delete(String id) {
         try {
             long parsedId = Long.parseLong(id.trim());
+
             if (UserValidationUtil.isValidId(parsedId)) {
+
                 if (userDAO.removeUser(parsedId)) {
                     return "Пользователь успешно удален.";
                 } else {
                     return "Не удалось удалить пользователя. Пользователь не найден.";
                 }
+
             }
+
             return "Некорректный идентификатор.";
 
         } catch (NumberFormatException e) {
             return "Введите допустимое целое число для идентификатора.";
+
         } catch (HibernateException e) {
             logger.error("Произошла ошибка базы данных при удалении пользователя: {}", e.getMessage(), e);
             return "Произошла ошибка базы данных. Попробуйте еще раз позже.";

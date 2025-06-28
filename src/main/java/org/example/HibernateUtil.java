@@ -13,13 +13,14 @@ import org.slf4j.LoggerFactory;
  */
 public class HibernateUtil {
     private static final Logger logger = LoggerFactory.getLogger(HibernateUtil.class);
-    private static final SessionFactory sessionFactory;
+    private static SessionFactory sessionFactory;
+    private static final String CONFIG_FILE = System.getProperty("hibernate.config.file", "Hibernate.cfg.xml");
 
     static {
         StandardServiceRegistry registry = null;
         try {
             registry = new StandardServiceRegistryBuilder()
-                    .configure("Hibernate.cfg.xml")
+                    .configure(CONFIG_FILE)
                     .build();
 
             sessionFactory = new MetadataSources(registry)
@@ -54,6 +55,7 @@ public class HibernateUtil {
      * Возвращает SessionFactory Hibernate.
      *
      * @return объект {@link SessionFactory}
+     *
      * @throws IllegalStateException если SessionFactory не инициализирована
      */
     public static SessionFactory getSessionFactory() {
@@ -70,6 +72,8 @@ public class HibernateUtil {
      */
     public static void shutdown() {
         if (sessionFactory != null && sessionFactory.isOpen()) {
+            Logger logger = LoggerFactory.getLogger(HibernateUtil.class);
+            logger.info("Shutting down SessionFactory", new Throwable("Stack trace for debugging"));
             sessionFactory.close();
             logger.info("SessionFactory закрыт");
         } else {
